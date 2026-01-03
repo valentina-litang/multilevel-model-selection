@@ -1,0 +1,58 @@
+---
+title: "A Multilevel Analysis of Radon Exposure in Minnesota"
+author: "Valentina Litang"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+library(MASS)
+library(glmnet)
+library(dplyr)
+library(tidyr)
+library(lme4)
+```
+
+
+I built multilevel models to identify which counties should be prioritized for inspection. First, I created the following models and compared them to determine which model has the best fit.
+
+-   Model 1 - a basic model with log.u and floor as the fixed effects and county as the random effect
+
+-   Model 2 - same as model 1 but I added an interaction between log.u and floor
+
+-   Model 3 - same as model 1 but I added a random slope for log.u within county
+
+-   Model 4 - same as model 1 but I added a random slope for floor within county
+
+AIC prefers model 4, and BIC prefers model 1. A likelihood ratio test between the two shows that model 4 does not significantly improve the model fit over model 1. Therefore, I will be using model 1.
+
+```{r}
+radon <- read_csv("radon.csv")
+
+model1 <- lmer(log.radon ~ log.u + floor + (1|county), data = radon)
+model2 <- lmer(log.radon ~ log.u * floor + (1|county), data = radon)
+model3 <- lmer(log.radon ~ log.u + floor + (log.u | county), data = radon)
+model4 <- lmer(log.radon ~ log.u + floor + (floor | county), data = radon)
+
+BIC(model1, model2, model3, model4)
+AIC(model1, model2, model3, model4)
+
+anova(model1, model4)
+```
+
+Next, I used my model to identify which counties should be prioritized for inspection. 
+
+```{r}
+random_effects <- ranef(model1)$county
+
+random_effects <- data.frame(county = rownames(random_effects), effect = random_effects[, 1])
+
+counties <- random_effects %>%
+  arrange(desc(effect))
+
+head(counties, 5)
+```
+
+The five counties with the highest random effect should be prioritized. I found that counties 7, 24, 38, 25, and 81 should be prioritized.

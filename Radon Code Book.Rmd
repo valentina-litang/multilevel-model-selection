@@ -1,0 +1,24 @@
+---
+title: "Radon Code Book"
+date: '2024-12-05'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Data from 919 homes. 
+
+`log.u` = logarithm of county uranium levels
+
+`uranium` = uranium levels at the county level
+
+`radon` = radon levels
+
+`log.radon` = log radon levels 
+
+`floor` = whether the reading was taken in the basement (0) or the grond floor (1). 
+
+`county` = the county 
+
